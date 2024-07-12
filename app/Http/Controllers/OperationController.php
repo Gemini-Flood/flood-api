@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\HelperController;
 use App\Models\FloodReport;
+use App\Models\FloodZone;
 use App\Models\WeatherForecast;
 use Illuminate\Support\Facades\Validator;
 use App\Services\GeminiService;
@@ -60,6 +61,20 @@ class OperationController extends HelperController
         return $this->globalResponse(false, 200, $datas, "Données météorologiques recuperées avec succes");
     }
 
+    public function getReports()
+    {
+        $reports = FloodReport::all();
+
+        return $this->globalResponse(false, 200, $reports, "Signalements récuperés avec succès");
+    }
+
+    public function getUserReports($id)
+    {
+        $reports = FloodReport::where('user_id', $id)->get();
+
+        return $this->globalResponse(false, 200, $reports, "Signalements récuperés avec succès");
+    }
+
     public function saveReport(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -98,6 +113,54 @@ class OperationController extends HelperController
 
     }
 
-    
+    public function getFloodZones()
+    {
+        $zones = FloodZone::all();
+
+        return $this->globalResponse(false, 200, $zones, "Zones d'eau récupérées avec succes");
+    }
+
+    public function actualizeFloodZone(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'location' => 'required|string',
+            'latitude' => 'required|string',
+            'longitude' => 'required|string',
+            'risk_level' => 'required|string',
+            'historical_data' => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->globalResponse(false, 400, null, $validator->errors());
+        }
+
+        $floodZone = FloodZone::where('latitude', $request->latitude)
+                              ->where('longitude', $request->longitude)
+                              ->first();
+
+        if ($floodZone) {
+            $floodZone->location = $request->location;
+            $floodZone->risk_level = $request->risk_level;
+            $floodZone->historical_data = $request->historical_data;
+            $floodZone->save();
+
+            return $this->globalResponse(false, 200, $floodZone, "Zone actualisée avec succes");
+        } else {
+            // Créer une nouvelle entrée pour la zone
+            $floodZone = FloodZone::create([
+                'location' => $request->location,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'risk_level' => $request->risk_level,
+                'historical_data' => $request->historical_data,
+            ]);
+
+            if ($floodZone) {
+                return $this->globalResponse(false, 200, $floodZone, "Zone enregistrée avec succes");
+            } else {
+                return $this->globalResponse(true, 400, null, "Erreur lors de l'enregistrement de la zone");
+            }
+        }
+    }
 
 }

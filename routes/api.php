@@ -25,7 +25,15 @@ Route::prefix('auth')->group(function () {
 
 Route::prefix('weathers')->group(function () {
     Route::post('/prevision', [OperationController::class, 'getWeather']);
+});
+
+Route::prefix('floods')->group(function () {
+    Route::get('/reports', [OperationController::class, 'getReports']);
+    Route::get('/reports/{id}', [OperationController::class, 'getUserReports']);
     Route::post('/report', [OperationController::class, 'saveReport']);
+
+    Route::get('/zones', [OperationController::class, 'getFloodZones']);
+    Route::post('/actualizeZones', [OperationController::class, 'actualizeFloodZone']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
