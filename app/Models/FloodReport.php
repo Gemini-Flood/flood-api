@@ -13,11 +13,13 @@ class FloodReport extends Model
         'user_id',
         'location',
         'description',
-        'image',
+        'latitude',
+        'longitude',
+        'image'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    }   
+    }
 }

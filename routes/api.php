@@ -20,6 +20,7 @@ use App\Http\Controllers\AuthController;
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/updateToken', [AuthController::class, 'updateFCMToken']);
 });
 
 Route::prefix('weathers')->group(function () {

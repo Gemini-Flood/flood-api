@@ -13,6 +13,6 @@ class WeatherForecast extends Model
         'location',
         'forecast',
         'forecast_date',
-        'forecast_time',
+        'forecast_time'
     ];
 }

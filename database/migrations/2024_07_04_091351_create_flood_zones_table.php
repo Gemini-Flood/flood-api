@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('flood_zones', function (Blueprint $table) {
             $table->id();
             $table->string('location');
-            $table->text('coordinates');
+            $table->string('latitude')->nullable();
+            $table->string('longitude')->nullable();
             $table->timestamps();
         });
     }

@@ -32,7 +32,9 @@ class AuthController extends HelperController
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string'
+            'name' => 'required|string',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -46,13 +48,31 @@ class AuthController extends HelperController
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email
+            'email' => $request->email,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         if($user){
             return $this->globalResponse(false, 200, $user, 'Utilisateur ajouté');
         }else{
             return $this->globalResponse(true, 400, $user, "Erreur lors de l'ajout de l'utilisateur");
+        }
+
+    }
+
+    public function updateFCMToken(Request $request)
+    {
+
+        $user = User::find($request->id);
+
+        if($user){
+            $user->fcm_token = $request->token;
+            $user->save();
+
+            return $this->globalResponse(false, 200, $user, "Token mis à jour avec succes");
+        }else{
+            return $this->globalResponse(true, 400, null, "Utilisateur introuvable");
         }
 
     }
