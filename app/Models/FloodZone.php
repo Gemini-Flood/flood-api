@@ -12,6 +12,8 @@ class FloodZone extends Model
     protected $fillable = [
         'location',
         'latitude',
-        'longitude'
+        'longitude',
+        'risk_level',
+        'historical_data',
     ];
 }

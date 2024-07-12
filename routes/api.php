@@ -25,6 +25,7 @@ Route::prefix('auth')->group(function () {
 
 Route::prefix('weathers')->group(function () {
     Route::post('/prevision', [OperationController::class, 'getWeather']);
+    Route::post('/report', [OperationController::class, 'saveReport']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('location');
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
+            $table->string('risk_level')->comment('Niveau de risque (faible, modéré, élevé, extrême)');
+            $table->text('historical_data')->nullable()->comment('Données historiques sur les inondations');
             $table->timestamps();
         });
     }
