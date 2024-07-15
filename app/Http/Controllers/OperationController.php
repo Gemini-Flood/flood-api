@@ -100,7 +100,7 @@ class OperationController extends HelperController
         if($request->hasFile('photo')) {
             $photo = $request->file('photo');
             $picture = $date->getTimestamp().'_'.$photo->getClientOriginalExtension();
-            $photo->move(base_path('../../images/flood_reports'), $picture);
+            $photo->move(base_path('../public/images/flood_reports'), $picture);
         }
 
         $floodReport = FloodReport::create([
