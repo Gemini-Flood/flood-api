@@ -77,6 +77,7 @@ class OperationController extends HelperController
 
     public function saveReport(Request $request)
     {
+        $date = Carbon::now();
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
             'description' => 'required|string',
@@ -96,10 +97,16 @@ class OperationController extends HelperController
             return $this->globalResponse(false, 401, null, "Le signalement existe déjà");
         }
 
+        if($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            $picture = $date->getTimestamp().'_'.$photo->getClientOriginalExtension();
+            $photo->move(base_path('../../images/flood_reports'), $picture);
+        }
+
         $floodReport = FloodReport::create([
             'user_id' => $request->user_id,
             'description' => $request->description,
-            'image' => $request->file('photo')->store('flood_reports', 'public'), // Stocker la photo
+            'image' => $request->hasFile('photo') ? 'flood_reports'.'/'.$picture : null, // Stocker la photo
             'location' => $request->location,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
