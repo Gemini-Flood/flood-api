@@ -99,7 +99,7 @@ class OperationController extends HelperController
         $floodReport = FloodReport::create([
             'user_id' => $request->user_id,
             'description' => $request->description,
-            'photo' => $request->file('photo')->store('flood_reports', 'public'), // Stocker la photo
+            'image' => $request->file('photo')->store('flood_reports', 'public'), // Stocker la photo
             'location' => $request->location,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
