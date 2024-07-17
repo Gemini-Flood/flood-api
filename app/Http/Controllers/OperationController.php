@@ -191,7 +191,9 @@ class OperationController extends HelperController
 
             $users = User::findUsersWithinRadius($floodZone->latitude, $floodZone->longitude);
             foreach ($users as $user) {
-                $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
+                if($user->fcm_token){
+                    $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
+                }
             }
         }
 
@@ -230,10 +232,11 @@ class OperationController extends HelperController
             $latitude = $alert->zone->latitude;
             $longitude = $alert->zone->longitude;
 
-            $users = $this->locationService->getUsersInZone($latitude, $longitude);
-
+            $users = User::findUsersWithinRadius($latitude, $longitude);
             foreach ($users as $user) {
-                $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
+                if($user->fcm_token){
+                    $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
+                }
             }
 
             return $this->globalResponse(false, 200, null, "Alerte envoyée avec succes");
