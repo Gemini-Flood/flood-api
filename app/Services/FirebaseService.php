@@ -42,7 +42,7 @@ class FirebaseService extends HelperController
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         curl_exec($ch);
-        $res = curl_close($ch);
+        curl_close($ch);
         /* if($res){
             return true;
         } */

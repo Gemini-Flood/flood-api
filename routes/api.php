@@ -36,6 +36,12 @@ Route::prefix('floods')->group(function () {
     Route::post('/actualizeZones', [OperationController::class, 'actualizeFloodZone']);
 });
 
+Route::prefix('alerts')->group(function () {
+    Route::get('/actives', [OperationController::class, 'getActiveAlerts']);
+    Route::get('/historical', [OperationController::class, 'getHistoricalAlerts']);
+    Route::get('/launch/{id}', [OperationController::class, 'launchAlert']);
+});
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
