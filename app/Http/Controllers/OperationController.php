@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\HelperController;
+use App\Models\Alert;
 use App\Models\FloodReport;
 use App\Models\FloodZone;
 use App\Models\WeatherForecast;
 use Illuminate\Support\Facades\Validator;
+use App\Services\FirebaseService;
 use App\Services\GeminiService;
 use App\Services\LocationService;
 use App\Services\WeatherService;
@@ -18,12 +20,14 @@ class OperationController extends HelperController
     protected $geminiService;
     protected $weatherService;
     protected $locationService;
+    protected $firebaseService;
 
-    public function __construct(GeminiService $geminiService, WeatherService $weatherService, LocationService $locationService)
+    public function __construct(GeminiService $geminiService, WeatherService $weatherService, LocationService $locationService, FirebaseService $firebaseService)
     {
         $this->geminiService = $geminiService;
         $this->weatherService = $weatherService;
         $this->locationService = $locationService;
+        $this->firebaseService = $firebaseService;
     }
 
     public function getWeather(Request $request)
@@ -129,6 +133,8 @@ class OperationController extends HelperController
 
     public function actualizeFloodZone(Request $request)
     {
+        $success = false;
+        $date = Carbon::now();
         $validator = Validator::make($request->all(), [
             'location' => 'required|string',
             'latitude' => 'required|string',
@@ -151,9 +157,8 @@ class OperationController extends HelperController
             $floodZone->historical_data = $request->historical_data;
             $floodZone->save();
 
-            return $this->globalResponse(false, 200, $floodZone, "Zone actualisée avec succes");
+            $success = true;
         } else {
-            // Créer une nouvelle entrée pour la zone
             $floodZone = FloodZone::create([
                 'location' => $request->location,
                 'latitude' => $request->latitude,
@@ -163,10 +168,53 @@ class OperationController extends HelperController
             ]);
 
             if ($floodZone) {
-                return $this->globalResponse(false, 200, $floodZone, "Zone enregistrée avec succes");
-            } else {
-                return $this->globalResponse(true, 400, null, "Erreur lors de l'enregistrement de la zone");
+                $success = true;
             }
+        }
+
+        $existingAlert = Alert::where('flood_zone_id', $floodZone->id)
+                            ->where('risk_level', $request->risk_level)
+                            ->where('expires_at', '>', $date)
+                            ->first();
+
+        if (!$existingAlert) {
+            $alertMessage = $this->generateAlertMessage($request->risk_level);
+
+            $alert = Alert::create([
+                'flood_zone_id' => $floodZone->id,
+                'title' => "Alerte d'inondation",
+                'message' => $alertMessage,
+                'risk_level' => $request->risk_level,
+                'expires_at' => $date->addDays(3),
+            ]);
+
+            $users = $this->locationService->getUsersInZone($floodZone->latitude, $floodZone->longitude);
+            foreach ($users as $user) {
+                $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
+            }
+        }
+
+
+        if($success){
+            return $this->globalResponse(false, 200, $floodZone, "Zone mise à jour avec succes");
+        }else{
+            return $this->globalResponse(true, 400, null, "Erreur lors de la mise à jour de la zone");
+        }
+    }
+
+    private function generateAlertMessage($riskLevel)
+    {
+        switch ($riskLevel) {
+            case "faible":
+                return "Risque faible d'inondation. Soyez vigilant et suivez les prévisions météorologiques.";
+            case "modéré":
+                return "Risque modéré d'inondation. Prenez des précautions et préparez-vous à une éventuelle évacuation.";
+            case "élevé":
+                return "Risque élevé d'inondation. Évacuez la zone immédiatement et suivez les instructions des autorités locales.";
+            case "extrême":
+                return "Risque extrême d'inondation. Danger imminent. Évacuez immédiatement et cherchez un abri sûr.";
+            default:
+                return "Risque inconnu. Restez vigilant et suivez les prévisions météorologiques.";
         }
     }
 

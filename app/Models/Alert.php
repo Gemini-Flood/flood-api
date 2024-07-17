@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FloodZone extends Model
+class Alert extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'location',
-        'latitude',
-        'longitude',
+        'flood_zone_id',
+        'title',
+        'message',
         'risk_level',
-        'historical_data',
+        'expires_at'
     ];
 
-    public function alerts()
+    public function zone()
     {
-        return $this->hasMany(Alert::class);
+        return $this->belongsTo(FloodZone::class);
     }
 }
