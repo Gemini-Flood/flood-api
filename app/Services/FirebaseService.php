@@ -10,12 +10,12 @@ class FirebaseService extends HelperController
 
     public function sendPushNotification($title, $message, $userToken){
 
-        $credentialsFilePath = "config\fcm.json";
+        $credentialsFilePath = base_path("../laravel/config/fcm.json");
         $client = new \Google_Client();
         $client->setAuthConfig($credentialsFilePath);
         $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
         $apiurl = 'https://fcm.googleapis.com/v1/projects/floodai-1f951/messages:send';
-        $client->fetchAccessTokenWithRefreshToken();
+        $client->getRefreshToken();
         $token = $client->getAccessToken();
         $access_token = $token['access_token'];
 
@@ -27,8 +27,14 @@ class FirebaseService extends HelperController
             "title" => $title,
             "description" => $message,
         ];
+        $test_notif = [
+            "title" => $title,
+            "description" => $message,
+        ];
 
         $data['data'] =  $test_data;
+
+        $data['notification'] =  $test_notif;
 
         $data['token'] = $userToken; // Retrive fcm_token from users table
 
@@ -38,11 +44,11 @@ class FirebaseService extends HelperController
         curl_setopt($ch, CURLOPT_URL, $apiurl);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_exec($ch);
-        curl_close($ch);
+
+        $response = curl_exec($ch);
         /* if($res){
             return true;
         } */
