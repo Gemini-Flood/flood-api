@@ -34,4 +34,15 @@ class User extends Authenticatable
     protected $hidden = [
         'password'
     ];
+
+    public static function findUsersWithinRadius($latitude, $longitude)
+    {
+        $haversine = "(6371 * acos(cos(radians($latitude)) * cos(radians(latitude)) * cos(radians(longitude) - radians($longitude)) + sin(radians($latitude)) * sin(radians(latitude))))";
+
+        return self::select('users.*')
+                    ->selectRaw("{$haversine} AS distance")
+                    ->having('distance', '<', 2)
+                    ->orderBy('distance')
+                    ->get();
+    }
 }

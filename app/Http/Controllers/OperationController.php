@@ -6,6 +6,7 @@ use App\Http\Controllers\Helpers\HelperController;
 use App\Models\Alert;
 use App\Models\FloodReport;
 use App\Models\FloodZone;
+use App\Models\User;
 use App\Models\WeatherForecast;
 use Illuminate\Support\Facades\Validator;
 use App\Services\FirebaseService;
@@ -188,7 +189,7 @@ class OperationController extends HelperController
                 'expires_at' => $date->addDays(3),
             ]);
 
-            $users = $this->locationService->getUsersInZone($floodZone->latitude, $floodZone->longitude);
+            $users = User::findUsersWithinRadius($floodZone->latitude, $floodZone->longitude);
             foreach ($users as $user) {
                 $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
             }
