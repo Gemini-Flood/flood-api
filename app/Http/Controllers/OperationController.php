@@ -202,6 +202,45 @@ class OperationController extends HelperController
         }
     }
 
+    public function getActiveAlerts()
+    {
+        $now = Carbon::now();
+        $activeAlerts = Alert::where('expires_at', '>', $now)->get();
+
+        return $this->globalResponse(false, 200, $activeAlerts, "Alertes actives sélectionnées avec succès");
+    }
+
+    public function getHistoricalAlerts()
+    {
+        $now = Carbon::now();
+        $historicalAlerts = Alert::where('expires_at', '<', $now)->get();
+
+        return $this->globalResponse(false, 200, $historicalAlerts, "Historique d'alertes sélectionnée avec succès");
+    }
+
+    public function launchAlert($id)
+    {
+        $alert = Alert::where('id', $id)
+                    ->with('zone')
+                    ->first();
+
+        if ($alert) {
+
+            $latitude = $alert->zone->latitude;
+            $longitude = $alert->zone->longitude;
+
+            $users = $this->locationService->getUsersInZone($latitude, $longitude);
+
+            foreach ($users as $user) {
+                $this->firebaseService->sendPushNotification($alert->title, $alert->message, $user->fcm_token);
+            }
+
+            return $this->globalResponse(false, 200, null, "Alerte envoyée avec succes");
+        } else {
+            return $this->globalResponse(true, 400, null, "Alerte introuvable");
+        }
+    }
+
     private function generateAlertMessage($riskLevel)
     {
         switch ($riskLevel) {

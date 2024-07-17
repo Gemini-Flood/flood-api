@@ -19,6 +19,6 @@ class Alert extends Model
 
     public function zone()
     {
-        return $this->belongsTo(FloodZone::class);
+        return $this->belongsTo(FloodZone::class, 'flood_zone_id');
     }
 }
