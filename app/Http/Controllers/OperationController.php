@@ -208,7 +208,7 @@ class OperationController extends HelperController
     public function getActiveAlerts()
     {
         $now = Carbon::now();
-        $activeAlerts = Alert::where('expires_at', '>', $now)->get();
+        $activeAlerts = Alert::where('expires_at', '>', $now)->with('zone')->get();
 
         return $this->globalResponse(false, 200, $activeAlerts, "Alertes actives sélectionnées avec succès");
     }

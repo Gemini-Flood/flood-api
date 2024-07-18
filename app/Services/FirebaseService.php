@@ -29,7 +29,7 @@ class FirebaseService extends HelperController
         ];
         $test_notif = [
             "title" => $title,
-            "description" => $message,
+            "body" => $message,
         ];
 
         $data['data'] =  $test_data;
